@@ -6,33 +6,30 @@ using GreetingsCore.Ports;
 using GreetingsCore.Ports.Commands;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Paramore.Darker;
 
 namespace GreetingsApp.Adapters.Controllers
 {
     [Route("api/[controller]")]
     public class GreetingsController : Controller
     {
-        private readonly IQueryProcessor _queryProcessor;
         private readonly DbContextOptions<GreetingContext> _options;
         
-        public GreetingsController(IQueryProcessor queryProcessor, DbContextOptions<GreetingContext> options)
+        public GreetingsController(DbContextOptions<GreetingContext> options)
         {
-            _queryProcessor = queryProcessor;
             _options = options;
         }
 
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var greetings = await _queryProcessor.ExecuteAsync(new GreetingsAllQuery());
+            var greetings = await new GreetingsAllQuery(_options).ExecuteAsync();
             return Ok(greetings.Greetings);
         }
 
         [HttpGet("{id}", Name = "GetGreeting")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var greeting = await _queryProcessor.ExecuteAsync(new GreetingsByIdQuery(id));
+            var greeting = await new GreetingsByIdQuery(id, _options).ExecuteAsync();
             return Ok(greeting);
         }
 
@@ -47,7 +44,7 @@ namespace GreetingsApp.Adapters.Controllers
             var regreetEvent = new RegreetEvent(addGreetingCommand.Id, _options);
             await regreetEvent.ExecuteAsync();
 
-            var addedGreeting = await _queryProcessor.ExecuteAsync(new GreetingsByIdQuery(newGreetingId));
+            var addedGreeting = await new GreetingsByIdQuery(newGreetingId, _options).ExecuteAsync();
             
             return Ok(addedGreeting);
         }
