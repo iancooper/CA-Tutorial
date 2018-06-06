@@ -9,6 +9,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.0.0" />
     <PackageReference Include="Paramore.Brighter" Version="7.1.59" />
+    <PackageReference Include="Paramore.Brighter.MessageStore.MySql" Version="7.1.59" />
+    <PackageReference Include="Paramore.Brighter.MessagingGateway.RMQ" Version="7.1.59" />
     <PackageReference Include="Paramore.Darker" Version="1.0.1" />
     <PackageReference Include="Paramore.Darker.AspNetCore" Version="1.1.1" />
     <PackageReference Include="Paramore.Darker.SimpleInjector" Version="1.0.0" />

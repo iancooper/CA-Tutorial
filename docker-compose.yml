@@ -1,25 +1,46 @@
 version: '3.1'
 services:
-  reverse-proxy:
-    build: ./nginx
-    ports:
-     - "8080:80"
-    links:
-     - web:greetingsweb
-    depends_on:
-     - web
   web:
     build: ./GreetingsApp
     hostname: greetingsweb
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     environment:
+      - BROKER=amqp://guest:guest@greetings_broker:5672
+      - Database__Greetings=Server=greetings_db;Uid=root;Pwd=root;Database=Greetings
+      - Database__GreetingsDb=Server=greetings_db;Uid=root;Pwd=root
+      - Database__MessageStore=Server=greetings_db;Uid=root;Pwd=root;Database=Greetings
+      - Database__MessageTableName=Messages
+    links:
+      - rabbit:greetings_broker
+      - mysql:greetings_db
+    depends_on:
+      - rabbit
+      - mysql
+  worker:
+    build: ./GreetingsWorker
+    hostname: greetingsworker
+    environment:
+      - BROKER=amqp://guest:guest@greetings_broker:5672
       - Database__Greetings=Server=greetings_db;Uid=root;Pwd=root;Database=Greetings
       - Database__GreetingsDb=Server=greetings_db;Uid=root;Pwd=root
     links:
+      - rabbit:greetings_broker
       - mysql:greetings_db
     depends_on:
+      - rabbit
       - mysql
+  rabbit:
+    image: rabbitmq:3-management
+    hostname: greetings_broker
+    environment:
+      - RABBITMQ_ERLANG_COOKIE=SWQOKODSQALRPCLNMEQG
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_VHOST=/
+    ports:
+      - "15672:15672"
+      - "5672:5672"
   mysql:
     hostname: greetings_db
     image: mysql

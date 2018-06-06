@@ -3,14 +3,15 @@ using System.Collections.Immutable;
 using GreetingsCore.Adapters.BrighterFactories;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.DI;
+using GreetingsCore.Adapters.Factories;
 using GreetingsCore.Ports;
 using GreetingsCore.Ports.Commands;
 using GreetingsCore.Ports.Handlers;
+using GreetingsCore.Ports.Mappers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +20,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Paramore.Brighter;
+using Paramore.Brighter.MessageStore.MySql;
+using Paramore.Brighter.MessagingGateway.RMQ;
+using Paramore.Brighter.MessagingGateway.RMQ.MessagingGatewayConfiguration;
 using Paramore.Darker;
 using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Builder;
@@ -81,6 +85,27 @@ namespace GreetingsApp.Adapters.Configuration
             });
         }
         
+        private static void CreateMessageTable(string dataSourceTestDb, string tableNameMessages)
+        {
+            try
+            {
+                using (var sqlConnection = new MySqlConnection(dataSourceTestDb))
+                {
+                    sqlConnection.Open();
+                    using (var command = sqlConnection.CreateCommand())
+                    {
+                        command.CommandText = MySqlMessageStoreBuilder.GetDDL(tableNameMessages);
+                        command.ExecuteScalar();
+                    }
+                }
+                
+            }
+            catch (System.Exception e)
+            {
+                Console.WriteLine($"Issue with creating MessageStore table, {e.Message}");
+            }
+        }
+        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
@@ -102,6 +127,8 @@ namespace GreetingsApp.Adapters.Configuration
             CheckDbIsUp(Configuration["Database:GreetingsDb"]);
 
             EnsureDatabaseCreated();
+            
+            CreateMessageTable(Configuration["Database:MessageStore"], Configuration["Database:MessageTableName"]);
 
         }
         
@@ -111,20 +138,7 @@ namespace GreetingsApp.Adapters.Configuration
             // Add framework services.
             services.AddApplicationInsightsTelemetry(Configuration);
             
-            services.AddMvc(options => 
-            {
-                options.CacheProfiles.Add("Default",
-                        new CacheProfile()
-                        {
-                            Duration = 60
-                        });
-                options.CacheProfiles.Add("Never",
-                        new CacheProfile()
-                        {
-                            Location = ResponseCacheLocation.None,
-                            NoStore = true
-                        });
-            });
+            services.AddMvc();
 
             services.AddCors(options =>
             {
@@ -162,7 +176,11 @@ namespace GreetingsApp.Adapters.Configuration
        
         private void InitializeContainer(IApplicationBuilder app)
         {
-            _container.Register<DbContextOptions<GreetingContext>>( () => new DbContextOptionsBuilder<GreetingContext>().UseMySql(Configuration["Database:Greetings"]).Options, Lifestyle.Singleton);
+            _container.Register<DbContextOptions<GreetingContext>>( 
+                () => new DbContextOptionsBuilder<GreetingContext>()
+                    .UseMySql(Configuration["Database:Greetings"])
+                    .Options, 
+                Lifestyle.Singleton);
             
             // Add application presentation components:
             _container.RegisterMvcControllers(app);
@@ -221,11 +239,33 @@ namespace GreetingsApp.Adapters.Configuration
                 { CommandProcessor.CIRCUITBREAKERASYNC, circuitBreakerPolicyAsync }
             };
 
+            var messagingGatewayConfiguration = RmqGatewayBuilder.With.Uri(new Uri(Configuration["BROKER"]))
+                .Exchange("paramore.brighter.exchange")
+                .DefaultQueues();
+
+            var gateway = new RmqMessageProducer(messagingGatewayConfiguration);
+            var sqlMessageStore = new MySqlMessageStore(
+                new MySqlMessageStoreConfiguration(Configuration["Database:MessageStore"], 
+                    Configuration["Database:MessageTableName"])
+                );
+
+             var messageMapperFactory = new MessageMapperFactory(_container);
+            _container.Register<IAmAMessageMapper<RegreetCommand>, RegreetCommandMessageMapper>();
+
+            var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
+            {
+                {typeof(RegreetCommand), typeof(RegreetCommandMessageMapper)},
+            };
+
+            var messagingConfiguration = new MessagingConfiguration(
+                messageStore: sqlMessageStore,
+                messageProducer: gateway,
+                messageMapperRegistry: messageMapperRegistry);
 
             var commandProcessor = CommandProcessorBuilder.With()
                 .Handlers(new Paramore.Brighter.HandlerConfiguration(subscriberRegistry, servicesHandlerFactory))
                 .Policies(policyRegistry)
-                .NoTaskQueues()
+                .TaskQueues(messagingConfiguration)
                 .RequestContextFactory(new Paramore.Brighter.InMemoryRequestContextFactory())
                 .Build();
 

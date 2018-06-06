@@ -14,10 +14,12 @@ namespace GreetingsCore.Ports.Handlers
     public class AddGreetingCommandHandlerAsync : RequestHandlerAsync<AddGreetingCommand>
     {
         private readonly DbContextOptions<GreetingContext> _options;
+        private readonly IAmACommandProcessor _commandProcessor;
 
-        public AddGreetingCommandHandlerAsync(DbContextOptions<GreetingContext> options)
+        public AddGreetingCommandHandlerAsync(DbContextOptions<GreetingContext> options, IAmACommandProcessor commandProcessor)
         {
             _options = options;
+            _commandProcessor = commandProcessor;
         }
 
         [RequestLoggingAsync(step: 1, timing: HandlerTiming.Before)]
@@ -33,6 +35,8 @@ namespace GreetingsCore.Ports.Handlers
                     cancellationToken
                 );
             }
+            
+            _commandProcessor.Post(new RegreetCommand(command.Id));
 
             return await base.HandleAsync(command, cancellationToken);
         }
