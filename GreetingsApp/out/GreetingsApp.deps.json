@@ -1,7 +1,7 @@
 {
   "runtimeTarget": {
     "name": ".NETCoreApp,Version=v2.0",
-    "signature": "beaddc7da9c729a8f05d8e86a5c1074a67896f22"
+    "signature": "dbe85ef6a92d5e9de960c7eb1eee63092260fb44"
   },
   "compilationOptions": {
     "defines": [
@@ -31,6 +31,8 @@
           "Microsoft.Extensions.Logging": "2.0.0",
           "Microsoft.NETCore.App": "2.0.0",
           "Paramore.Brighter": "7.1.59",
+          "Paramore.Brighter.MessageStore.MySql": "7.1.59",
+          "Paramore.Brighter.MessagingGateway.RMQ": "7.1.59",
           "Paramore.Darker": "1.0.1",
           "Paramore.Darker.AspNetCore": "1.1.1",
           "Paramore.Darker.SimpleInjector": "1.0.0",
@@ -2388,6 +2390,33 @@
           "lib/netstandard1.5/Paramore.Brighter.dll": {}
         }
       },
+      "Paramore.Brighter.MessageStore.MySql/7.1.59": {
+        "dependencies": {
+          "MySqlConnector": "0.29.1",
+          "NETStandard.Library": "2.0.0",
+          "Paramore.Brighter": "7.1.59"
+        },
+        "runtime": {
+          "lib/netstandard1.5/Paramore.Brighter.MessageStore.MySql.dll": {}
+        },
+        "compile": {
+          "lib/netstandard1.5/Paramore.Brighter.MessageStore.MySql.dll": {}
+        }
+      },
+      "Paramore.Brighter.MessagingGateway.RMQ/7.1.59": {
+        "dependencies": {
+          "NETStandard.Library": "2.0.0",
+          "Paramore.Brighter": "7.1.59",
+          "Polly": "5.3.1",
+          "RabbitMQ.Client": "4.1.3"
+        },
+        "runtime": {
+          "lib/netstandard1.5/Paramore.Brighter.MessagingGateway.RMQ.dll": {}
+        },
+        "compile": {
+          "lib/netstandard1.5/Paramore.Brighter.MessagingGateway.RMQ.dll": {}
+        }
+      },
       "Paramore.Darker/1.0.1": {
         "dependencies": {
           "Microsoft.CSharp": "4.4.0",
@@ -2484,6 +2513,31 @@
         },
         "compile": {
           "lib/netstandard1.3/Pomelo.JsonObject.dll": {}
+        }
+      },
+      "RabbitMQ.Client/4.1.3": {
+        "dependencies": {
+          "System.Collections.Concurrent": "4.3.0",
+          "System.Console": "4.3.0",
+          "System.Diagnostics.Debug": "4.3.0",
+          "System.IO": "4.3.0",
+          "System.Linq": "4.3.0",
+          "System.Net.NameResolution": "4.3.0",
+          "System.Net.Security": "4.3.0",
+          "System.Net.Sockets": "4.3.0",
+          "System.Reflection.Extensions": "4.3.0",
+          "System.Reflection.TypeExtensions": "4.3.0",
+          "System.Runtime.Extensions": "4.3.0",
+          "System.Text.RegularExpressions": "4.3.0",
+          "System.Threading": "4.3.0",
+          "System.Threading.Thread": "4.3.0",
+          "System.Threading.Timer": "4.3.0"
+        },
+        "runtime": {
+          "lib/netstandard1.5/RabbitMQ.Client.dll": {}
+        },
+        "compile": {
+          "lib/netstandard1.5/RabbitMQ.Client.dll": {}
         }
       },
       "Remotion.Linq/2.1.1": {
@@ -5533,6 +5587,20 @@
       "path": "paramore.brighter/7.1.59",
       "hashPath": "paramore.brighter.7.1.59.nupkg.sha512"
     },
+    "Paramore.Brighter.MessageStore.MySql/7.1.59": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-s1Iw4anxiCf7j0iDFgBxZZEuSoleK0oJRGjH2QuxvaCuNEQB/zT+6SFF2wUJ9snPMIUQVKrmv+jAwjdmlGEkag==",
+      "path": "paramore.brighter.messagestore.mysql/7.1.59",
+      "hashPath": "paramore.brighter.messagestore.mysql.7.1.59.nupkg.sha512"
+    },
+    "Paramore.Brighter.MessagingGateway.RMQ/7.1.59": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-Luwenq8lXf54E1O8ihN942+VKl8/wb5jDwGryKr73jB6Q7R1fi2vAuUtJs8PjF5YunacB8CLwnWtIFfbkJ6Obg==",
+      "path": "paramore.brighter.messaginggateway.rmq/7.1.59",
+      "hashPath": "paramore.brighter.messaginggateway.rmq.7.1.59.nupkg.sha512"
+    },
     "Paramore.Darker/1.0.1": {
       "type": "package",
       "serviceable": true,
@@ -5588,6 +5656,13 @@
       "sha512": "sha512-erkYG/OW1LloSwDFGeS9MvVjy1FLmaV3k8GK/GMR8D3sSDEylZogoLdLiaOFc92+zTen92rG6XGiioNacSlg0A==",
       "path": "pomelo.jsonobject/1.1.1",
       "hashPath": "pomelo.jsonobject.1.1.1.nupkg.sha512"
+    },
+    "RabbitMQ.Client/4.1.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-TVmWOlW1KM/kNoG32YXffig33aPuS5BwBncGtQuCdVu9TTY5wa/Pu5S6r6v5Q3sGHJB9Ui/wtwveS4orY6YTDw==",
+      "path": "rabbitmq.client/4.1.3",
+      "hashPath": "rabbitmq.client.4.1.3.nupkg.sha512"
     },
     "Remotion.Linq/2.1.1": {
       "type": "package",
