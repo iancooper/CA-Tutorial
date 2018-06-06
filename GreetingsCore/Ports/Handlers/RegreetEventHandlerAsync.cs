@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Model;
 using GreetingsCore.Ports.Commands;
@@ -8,16 +10,16 @@ using Paramore.Brighter;
 
 namespace GreetingsCore.Ports.Handlers
 {
-    public class RegreetCommandHandler : RequestHandler<RegreetCommand>
+    public class RegreetEventHandlerAsync : RequestHandlerAsync<RegreetEvent>
     {
         private readonly DbContextOptions<GreetingContext> _options;
 
-        public RegreetCommandHandler(DbContextOptions<GreetingContext> options)
+        public RegreetEventHandlerAsync(DbContextOptions<GreetingContext> options)
         {
             _options = options;
         }
 
-        public override RegreetCommand Handle(RegreetCommand command)
+        public override async Task<RegreetEvent> HandleAsync(RegreetEvent @event, CancellationToken cancellationToken = new CancellationToken() )
         {
 
             //Note how we share the Db - same microservice, different process, so 
@@ -25,7 +27,7 @@ namespace GreetingsCore.Ports.Handlers
             Greeting greeting;
             using (var uow = new GreetingContext(_options))
             {
-                greeting = uow.Greetings.SingleOrDefault(g => g.Id == command.GreetingIdAsGuid());
+                greeting = uow.Greetings.SingleOrDefault(g => g.Id == @event.Id);
                 
             }
 
@@ -37,8 +39,8 @@ namespace GreetingsCore.Ports.Handlers
                 Console.WriteLine("Could not read message}");
                 Console.WriteLine("----------------------------------");
                 Console.WriteLine("Greeting Id from Originator Follows");
-                 Console.WriteLine("----------------------------------");
-                Console.WriteLine(command.GreetingId.ToString());
+                Console.WriteLine("----------------------------------");
+                Console.WriteLine(@event.GreetingId.ToString());
                 Console.WriteLine("----------------------------------");
                 Console.WriteLine("Message Ends");
             }
@@ -51,11 +53,11 @@ namespace GreetingsCore.Ports.Handlers
                 Console.WriteLine("----------------------------------");
                 Console.WriteLine("Greeting Id from Originator Follows");
                 Console.WriteLine("----------------------------------");
-                Console.WriteLine(command.GreetingId.ToString());
+                Console.WriteLine(@event.GreetingId.ToString());
                 Console.WriteLine("----------------------------------");
                 Console.WriteLine("Message Ends");
             }
-            return base.Handle(command);
+            return await base.HandleAsync(@event, cancellationToken);
         }
     }
 }

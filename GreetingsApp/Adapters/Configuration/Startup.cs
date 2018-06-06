@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Immutable;
 using GreetingsCore.Adapters.BrighterFactories;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.DI;
-using GreetingsCore.Adapters.Factories;
 using GreetingsCore.Ports;
 using GreetingsCore.Ports.Commands;
 using GreetingsCore.Ports.Handlers;
-using GreetingsCore.Ports.Mappers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -21,10 +18,7 @@ using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
 using Paramore.Brighter;
 using Paramore.Brighter.MessageStore.MySql;
-using Paramore.Brighter.MessagingGateway.RMQ;
-using Paramore.Brighter.MessagingGateway.RMQ.MessagingGatewayConfiguration;
 using Paramore.Darker;
-using Paramore.Darker.AspNetCore;
 using Paramore.Darker.Builder;
 using Paramore.Darker.Policies;
 using Paramore.Darker.QueryLogging;
@@ -223,8 +217,10 @@ namespace GreetingsApp.Adapters.Configuration
             var servicesHandlerFactory = new ServicesHandlerFactoryAsync(_container);
             var subscriberRegistry = new SubscriberRegistry();
             _container.Register<IHandleRequestsAsync<AddGreetingCommand>, AddGreetingCommandHandlerAsync>(Lifestyle.Scoped);
+            _container.Register<IHandleRequestsAsync<RegreetEvent>, RegreetEventHandlerAsync>(Lifestyle.Scoped);
 
             subscriberRegistry.RegisterAsync<AddGreetingCommand, AddGreetingCommandHandlerAsync>();
+            subscriberRegistry.RegisterAsync<RegreetEvent, RegreetEventHandlerAsync>();
 
             //create policies
             var retryPolicy = Policy.Handle<Exception>().WaitAndRetry(new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150) });
@@ -239,33 +235,10 @@ namespace GreetingsApp.Adapters.Configuration
                 { CommandProcessor.CIRCUITBREAKERASYNC, circuitBreakerPolicyAsync }
             };
 
-            var messagingGatewayConfiguration = RmqGatewayBuilder.With.Uri(new Uri(Configuration["BROKER"]))
-                .Exchange("paramore.brighter.exchange")
-                .DefaultQueues();
-
-            var gateway = new RmqMessageProducer(messagingGatewayConfiguration);
-            var sqlMessageStore = new MySqlMessageStore(
-                new MySqlMessageStoreConfiguration(Configuration["Database:MessageStore"], 
-                    Configuration["Database:MessageTableName"])
-                );
-
-             var messageMapperFactory = new MessageMapperFactory(_container);
-            _container.Register<IAmAMessageMapper<RegreetCommand>, RegreetCommandMessageMapper>();
-
-            var messageMapperRegistry = new MessageMapperRegistry(messageMapperFactory)
-            {
-                {typeof(RegreetCommand), typeof(RegreetCommandMessageMapper)},
-            };
-
-            var messagingConfiguration = new MessagingConfiguration(
-                messageStore: sqlMessageStore,
-                messageProducer: gateway,
-                messageMapperRegistry: messageMapperRegistry);
-
             var commandProcessor = CommandProcessorBuilder.With()
                 .Handlers(new Paramore.Brighter.HandlerConfiguration(subscriberRegistry, servicesHandlerFactory))
                 .Policies(policyRegistry)
-                .TaskQueues(messagingConfiguration)
+                .NoTaskQueues()
                 .RequestContextFactory(new Paramore.Brighter.InMemoryRequestContextFactory())
                 .Build();
 

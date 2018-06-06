@@ -36,7 +36,7 @@ namespace GreetingsCore.Ports.Handlers
                 );
             }
             
-            _commandProcessor.Post(new RegreetCommand(command.Id));
+            await _commandProcessor.PublishAsync(new RegreetEvent(command.Id));
 
             return await base.HandleAsync(command, cancellationToken);
         }
