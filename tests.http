@@ -1,0 +1,42 @@
+### Will be empty at first
+
+GET http://localhost:8080/api/Greetings HTTP/1.1
+
+
+### Now add a Greetings
+
+POST http://localhost:8080/api/Greetings HTTP/1.1
+Content-Type: application/json
+
+{
+    "Message" : "Hello World"
+}
+
+### Now see that greeting
+
+GET http://localhost:8080/api/Greetings/{b318377a-9718-46d4-bc42-508068e55ccd} HTTP/1.1
+
+
+### Now add some more greetings
+
+POST http://localhost:8080/api/Greetings HTTP/1.1
+Content-Type: application/json
+
+{
+    "Message" : "Hello Mary"
+}
+
+### And even more
+
+POST http://localhost:8080/api/Greetings HTTP/1.1
+Content-Type: application/json
+
+{
+    "Message" : "Hello Alice"
+}
+
+
+### Now see all the greeetings
+
+GET http://localhost:8080/api/Greetings HTTP/1.1
+

@@ -1,0 +1,31 @@
+version: '3.1'
+services:
+  reverse-proxy:
+    build: ./nginx
+    ports:
+     - "8080:80"
+    links:
+     - web:greetingsweb
+    depends_on:
+     - web
+  web:
+    build: ./GreetingsApp
+    hostname: greetingsweb
+    expose:
+      - "5000"
+    environment:
+      - Database__Greetings=Server=greetings_db;Uid=root;Pwd=root;Database=Greetings
+      - Database__GreetingsDb=Server=greetings_db;Uid=root;Pwd=root
+    links:
+      - mysql:greetings_db
+    depends_on:
+      - mysql
+  mysql:
+    hostname: greetings_db
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+    healthcheck:
+      test: mysqladmin ping -h localhost -p$$MYSQL_ROOT_PASSWORD && test '0' -eq $$(ps aux | awk '{print $$11}' | grep -c -e '^mysql$$')
