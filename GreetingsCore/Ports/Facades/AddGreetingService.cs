@@ -6,16 +6,16 @@ using GreetingsCore.Adapters.Repositories;
 using GreetingsCore.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace GreetingsCore.Ports.Commands
+namespace GreetingsCore.Ports.Facades
 {
-    public class AddGreetingCommand : IAmACommand
+    public class AddGreetingService 
     {
         private readonly DbContextOptions<GreetingContext> _options;
         
         public Guid Id { get; }
         public string Message { get; }
 
-        public AddGreetingCommand(Guid id, string message, DbContextOptions<GreetingContext> options) 
+        public AddGreetingService(Guid id, string message, DbContextOptions<GreetingContext> options) 
         {
             _options = options;
             Id = id;
@@ -23,7 +23,7 @@ namespace GreetingsCore.Ports.Commands
         }
 
 
-        public async Task ExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task AddAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             using (var uow = new GreetingContext(_options))
             {

@@ -1,25 +1,24 @@
 ﻿using System;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace GreetingsCore.Ports
+namespace GreetingsCore.Ports.Facades
 {
-    public class GreetingsByIdQuery: IAmAQuery<GreetingsByIdResult>
+    public class GreetingsByIdService
     {
         private readonly DbContextOptions<GreetingContext> _options;
         public Guid Id { get; }
         
-        public GreetingsByIdQuery(Guid id, DbContextOptions<GreetingContext> options)
+        public GreetingsByIdService(Guid id, DbContextOptions<GreetingContext> options)
         {
             _options = options;
             Id = id;
         }
 
-        public async Task<GreetingsByIdResult> ExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
+        public async Task<GreetingsByIdResult> QueryAsync(CancellationToken cancellationToken = new CancellationToken())
         {  
             using (var uow = new GreetingContext(_options))
             {

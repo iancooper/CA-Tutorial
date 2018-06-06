@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.ViewModels;
 using GreetingsCore.Ports;
-using GreetingsCore.Ports.Commands;
+using GreetingsCore.Ports.Facades;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,14 +22,14 @@ namespace GreetingsApp.Adapters.Controllers
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var greetings = await new GreetingsAllQuery(_options).ExecuteAsync();
+            var greetings = await new GreetingsAllService(_options).QueryAsync();
             return Ok(greetings.Greetings);
         }
 
         [HttpGet("{id}", Name = "GetGreeting")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var greeting = await new GreetingsByIdQuery(id, _options).ExecuteAsync();
+            var greeting = await new GreetingsByIdService(id, _options).QueryAsync();
             return Ok(greeting);
         }
 
@@ -37,14 +37,14 @@ namespace GreetingsApp.Adapters.Controllers
         public async Task<IActionResult> Post([FromBody] AddGreetingRequest request)
         {
             var newGreetingId = Guid.NewGuid();
-            var addGreetingCommand = new AddGreetingCommand(newGreetingId, request.Message, _options);
+            var addGreetingCommand = new AddGreetingService(newGreetingId, request.Message, _options);
 
-            await addGreetingCommand.ExecuteAsync();
+            await addGreetingCommand.AddAsync();
             
-            var regreetEvent = new RegreetEvent(addGreetingCommand.Id, _options);
-            await regreetEvent.ExecuteAsync();
+            var regreetEvent = new RegreetService(addGreetingCommand.Id, _options);
+            await regreetEvent.RegreetAsync();
 
-            var addedGreeting = await new GreetingsByIdQuery(newGreetingId, _options).ExecuteAsync();
+            var addedGreeting = await new GreetingsByIdService(newGreetingId, _options).QueryAsync();
             
             return Ok(addedGreeting);
         }
@@ -52,8 +52,8 @@ namespace GreetingsApp.Adapters.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var deleteGreetingCommand = new DeleteGreetingCommand(id, _options);
-            await deleteGreetingCommand.ExecuteAsync();
+            var deleteGreetingCommand = new DeleteGreetingService(id, _options);
+            await deleteGreetingCommand.DeleteAsync();
             return Ok();
         }
     }

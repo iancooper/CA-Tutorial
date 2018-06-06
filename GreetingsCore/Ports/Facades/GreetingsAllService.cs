@@ -4,18 +4,18 @@ using System.Threading.Tasks;
 using GreetingsCore.Adapters.Db;
 using Microsoft.EntityFrameworkCore;
 
-namespace GreetingsCore.Ports
+namespace GreetingsCore.Ports.Facades
 {
-    public class GreetingsAllQuery: IAmAQuery<GreetingsAllResult>
+    public class GreetingsAllService
     {        
         private readonly DbContextOptions<GreetingContext> _options;
  
-        public GreetingsAllQuery(DbContextOptions<GreetingContext> options)
+        public GreetingsAllService(DbContextOptions<GreetingContext> options)
         {
             _options = options;
         }
 
-        public async Task<GreetingsAllResult> ExecuteAsync(CancellationToken cancellationToken= new CancellationToken())
+        public async Task<GreetingsAllResult> QueryAsync(CancellationToken cancellationToken= new CancellationToken())
         {
             using (var uow = new GreetingContext(_options))
             {

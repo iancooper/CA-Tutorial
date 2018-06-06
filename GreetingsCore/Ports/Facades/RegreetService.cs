@@ -1,25 +1,24 @@
 ﻿using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace GreetingsCore.Ports.Commands
+namespace GreetingsCore.Ports.Facades
 {
-    public class RegreetEvent : IAmAnEvent
+    public class RegreetService 
     {
        private readonly DbContextOptions<GreetingContext> _options;
        public Guid GreetingId { get; set; }
 
-       public RegreetEvent(Guid greetingId, DbContextOptions<GreetingContext> options)
+       public RegreetService(Guid greetingId, DbContextOptions<GreetingContext> options)
        {
            _options = options;
            GreetingId = greetingId;
        }
 
-        public async Task ExecuteAsync(CancellationToken ct = new CancellationToken())
+        public async Task RegreetAsync(CancellationToken ct = new CancellationToken())
         {
                         //Note how we share the Db - same microservice, different process, so 
             // we can just ask for the greeting
