@@ -1,10 +1,7 @@
 ﻿using System;
-using GreetingsCore.Adapters.BrighterFactories;
 using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.DI;
 using GreetingsCore.Ports;
-using GreetingsCore.Ports.Commands;
-using GreetingsCore.Ports.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -16,8 +13,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MySql.Data.MySqlClient;
-using Paramore.Brighter;
-using Paramore.Brighter.MessageStore.MySql;
 using Paramore.Darker;
 using Paramore.Darker.Builder;
 using Paramore.Darker.Policies;
@@ -27,7 +22,6 @@ using Polly;
 using SimpleInjector;
 using SimpleInjector.Integration.AspNetCore.Mvc;
 using SimpleInjector.Lifestyles;
-using PolicyRegistry = Paramore.Brighter.PolicyRegistry;
 
 namespace GreetingsApp.Adapters.Configuration
 {
@@ -79,27 +73,6 @@ namespace GreetingsApp.Adapters.Configuration
             });
         }
         
-        private static void CreateMessageTable(string dataSourceTestDb, string tableNameMessages)
-        {
-            try
-            {
-                using (var sqlConnection = new MySqlConnection(dataSourceTestDb))
-                {
-                    sqlConnection.Open();
-                    using (var command = sqlConnection.CreateCommand())
-                    {
-                        command.CommandText = MySqlMessageStoreBuilder.GetDDL(tableNameMessages);
-                        command.ExecuteScalar();
-                    }
-                }
-                
-            }
-            catch (System.Exception e)
-            {
-                Console.WriteLine($"Issue with creating MessageStore table, {e.Message}");
-            }
-        }
-        
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IApplicationLifetime appLifetime)
         {
@@ -121,8 +94,6 @@ namespace GreetingsApp.Adapters.Configuration
             CheckDbIsUp(Configuration["Database:GreetingsDb"]);
 
             EnsureDatabaseCreated();
-            
-            CreateMessageTable(Configuration["Database:MessageStore"], Configuration["Database:MessageTableName"]);
 
         }
         
@@ -180,7 +151,6 @@ namespace GreetingsApp.Adapters.Configuration
             _container.RegisterMvcControllers(app);
             _container.RegisterMvcViewComponents(app);
 
-            RegisterCommandProcessor();
             RegisterQueryProcessor();
 
             // Cross-wire ASP.NET services (if any). For instance:
@@ -210,43 +180,6 @@ namespace GreetingsApp.Adapters.Configuration
 
                 _container.Register<IQueryProcessor>(() => queryProcessor, Lifestyle.Singleton);
         }
-
-        private void RegisterCommandProcessor()
-        {
-            //create handler 
-            var servicesHandlerFactory = new ServicesHandlerFactoryAsync(_container);
-            var subscriberRegistry = new SubscriberRegistry();
-            _container.Register<IHandleRequestsAsync<AddGreetingCommand>, AddGreetingCommandHandlerAsync>(Lifestyle.Scoped);
-            _container.Register<IHandleRequestsAsync<RegreetEvent>, RegreetEventHandlerAsync>(Lifestyle.Scoped);
-
-            subscriberRegistry.RegisterAsync<AddGreetingCommand, AddGreetingCommandHandlerAsync>();
-            subscriberRegistry.RegisterAsync<RegreetEvent, RegreetEventHandlerAsync>();
-
-            //create policies
-            var retryPolicy = Policy.Handle<Exception>().WaitAndRetry(new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150) });
-            var circuitBreakerPolicy = Policy.Handle<Exception>().CircuitBreaker(1, TimeSpan.FromMilliseconds(500));
-            var retryPolicyAsync = Policy.Handle<Exception>().WaitAndRetryAsync(new[] { TimeSpan.FromMilliseconds(50), TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150) });
-            var circuitBreakerPolicyAsync = Policy.Handle<Exception>().CircuitBreakerAsync(1, TimeSpan.FromMilliseconds(500));
-            var policyRegistry = new PolicyRegistry()
-            {
-                { CommandProcessor.RETRYPOLICY, retryPolicy },
-                { CommandProcessor.CIRCUITBREAKER, circuitBreakerPolicy },
-                { CommandProcessor.RETRYPOLICYASYNC, retryPolicyAsync },
-                { CommandProcessor.CIRCUITBREAKERASYNC, circuitBreakerPolicyAsync }
-            };
-
-            var commandProcessor = CommandProcessorBuilder.With()
-                .Handlers(new Paramore.Brighter.HandlerConfiguration(subscriberRegistry, servicesHandlerFactory))
-                .Policies(policyRegistry)
-                .NoTaskQueues()
-                .RequestContextFactory(new Paramore.Brighter.InMemoryRequestContextFactory())
-                .Build();
-
-            _container.RegisterSingleton<IAmACommandProcessor>(commandProcessor);
-        }
-
-
-
     }
     
 }

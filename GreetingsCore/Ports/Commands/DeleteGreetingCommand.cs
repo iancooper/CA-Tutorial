@@ -1,17 +1,31 @@
 ﻿using System;
-using Paramore.Brighter;
+using System.Threading;
+using System.Threading.Tasks;
+using GreetingsCore.Adapters.Db;
+using GreetingsCore.Adapters.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace GreetingsCore.Ports.Commands
 {
-    public class DeleteGreetingCommand : Command
-    {
+    public class DeleteGreetingCommand : IAmACommand
+    {        
+        private readonly DbContextOptions<GreetingContext> _options;
+
         public Guid ItemToDelete { get; }
         
-        public DeleteGreetingCommand(Guid itemToDelete) : this(Guid.NewGuid(), itemToDelete){}
-
-        public DeleteGreetingCommand(Guid id, Guid itemToDelete) : base(id)
+        public DeleteGreetingCommand(Guid itemToDelete, DbContextOptions<GreetingContext> options)
         {
+            _options = options;
             ItemToDelete = itemToDelete;
         }
-   }
+
+        public async Task ExecuteAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            using (var uow = new GreetingContext(_options))
+            {
+                var repository = new GreetingRepositoryAsync(uow);
+                await repository.DeleteAsync(ItemToDelete, cancellationToken);
+            }
+        }
+    }
 }

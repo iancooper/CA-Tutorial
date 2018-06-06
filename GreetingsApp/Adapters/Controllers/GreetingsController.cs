@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using GreetingsCore.Adapters.Db;
 using GreetingsCore.Adapters.ViewModels;
 using GreetingsCore.Ports;
 using GreetingsCore.Ports.Commands;
 using Microsoft.AspNetCore.Mvc;
-using Paramore.Brighter;
+using Microsoft.EntityFrameworkCore;
 using Paramore.Darker;
 
 namespace GreetingsApp.Adapters.Controllers
@@ -12,15 +13,13 @@ namespace GreetingsApp.Adapters.Controllers
     [Route("api/[controller]")]
     public class GreetingsController : Controller
     {
-        private readonly IAmACommandProcessor _commandProcessor;
         private readonly IQueryProcessor _queryProcessor;
+        private readonly DbContextOptions<GreetingContext> _options;
         
-        
-        // GET
-        public GreetingsController(IAmACommandProcessor commandProcessor, IQueryProcessor queryProcessor)
+        public GreetingsController(IQueryProcessor queryProcessor, DbContextOptions<GreetingContext> options)
         {
-            _commandProcessor = commandProcessor;
             _queryProcessor = queryProcessor;
+            _options = options;
         }
 
         [HttpGet]
@@ -41,9 +40,12 @@ namespace GreetingsApp.Adapters.Controllers
         public async Task<IActionResult> Post([FromBody] AddGreetingRequest request)
         {
             var newGreetingId = Guid.NewGuid();
-            var addGreetingCommand = new AddGreetingCommand(newGreetingId, request.Message);
+            var addGreetingCommand = new AddGreetingCommand(newGreetingId, request.Message, _options);
 
-            await _commandProcessor.SendAsync(addGreetingCommand);
+            await addGreetingCommand.ExecuteAsync();
+            
+            var regreetEvent = new RegreetEvent(addGreetingCommand.Id, _options);
+            await regreetEvent.ExecuteAsync();
 
             var addedGreeting = await _queryProcessor.ExecuteAsync(new GreetingsByIdQuery(newGreetingId));
             
@@ -53,8 +55,8 @@ namespace GreetingsApp.Adapters.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var deleteGreetingCommand = new DeleteGreetingCommand(id);
-            await _commandProcessor.SendAsync(deleteGreetingCommand);
+            var deleteGreetingCommand = new DeleteGreetingCommand(id, _options);
+            await deleteGreetingCommand.ExecuteAsync();
             return Ok();
         }
     }
