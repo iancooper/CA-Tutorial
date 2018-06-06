@@ -1,6 +1,6 @@
 ﻿using System;
-using GreetingsCore.Adapters.Db;
-using GreetingsCore.Adapters.DI;
+using GreetingsCore.Db;
+using GreetingsCore.DI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

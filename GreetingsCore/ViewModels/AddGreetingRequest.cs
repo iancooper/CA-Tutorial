@@ -1,4 +1,4 @@
-﻿namespace GreetingsCore.Adapters.ViewModels
+﻿namespace GreetingsCore.ViewModels
 {
     public class AddGreetingRequest
     {

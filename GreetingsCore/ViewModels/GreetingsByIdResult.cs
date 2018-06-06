@@ -1,7 +1,7 @@
 ﻿using System;
 using GreetingsCore.Model;
 
-namespace GreetingsCore.Ports.Facades
+namespace GreetingsCore.ViewModels
 {
     public class GreetingsByIdResult
     {

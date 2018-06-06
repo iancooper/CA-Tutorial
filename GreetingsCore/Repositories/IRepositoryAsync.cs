@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GreetingsCore.Ports.Repositories
+namespace GreetingsCore.Repositories
 {
     public interface IRepositoryAsync<T> where T : IEntity
     {

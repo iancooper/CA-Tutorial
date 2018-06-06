@@ -1,7 +1,7 @@
 ﻿using GreetingsCore.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace GreetingsCore.Adapters.Db
+namespace GreetingsCore.Db
 {
     public class GreetingContext : DbContext
     {

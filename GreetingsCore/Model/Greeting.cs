@@ -1,5 +1,5 @@
 ﻿using System;
-using GreetingsCore.Ports.Repositories;
+using GreetingsCore.Repositories;
 
 namespace GreetingsCore.Model
 {

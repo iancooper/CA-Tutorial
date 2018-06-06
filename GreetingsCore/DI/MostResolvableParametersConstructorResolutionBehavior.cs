@@ -11,7 +11,7 @@ using SimpleInjector.Advanced;
 //Frankly single constructor only is just nonsense. But folks want to use SimpleInjector, so we just override its
 //behaviour everywhere
 
-namespace GreetingsCore.Adapters.DI
+namespace GreetingsCore.DI
 {
     public class MostResolvableParametersConstructorResolutionBehavior : IConstructorResolutionBehavior
     {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace GreetingsCore.Ports.Facades
+namespace GreetingsCore.ViewModels
 {
     public class GreetingsAllResult
     {

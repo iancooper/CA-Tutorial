@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GreetingsCore.Ports.Repositories
+namespace GreetingsCore.Repositories
 {
     public interface IEntity
     {
