@@ -17,7 +17,4 @@
     <_ContentIncludedByDefault Remove="out\GreetingsApp.deps.json" />
     <_ContentIncludedByDefault Remove="out\GreetingsApp.runtimeconfig.json" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\GreetingsEntities\GreetingsEntities.csproj" />
-  </ItemGroup>
 </Project>
