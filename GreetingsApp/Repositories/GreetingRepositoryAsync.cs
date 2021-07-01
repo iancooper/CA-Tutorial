@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using GreetingsCore.Db;
-using GreetingsCore.Model;
+using GreetingsApp.Db;
+using GreetingsApp.Model;
 using Microsoft.EntityFrameworkCore;
 
-namespace GreetingsCore.Repositories
+namespace GreetingsApp.Repositories
 {
     public class GreetingRepositoryAsync : IRepositoryAsync<Greeting>
     {

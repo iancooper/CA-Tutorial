@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GreetingsCore.Repositories
+namespace GreetingsApp.Repositories
 {
     public interface IEntity
     {

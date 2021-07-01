@@ -1,7 +1,7 @@
 ﻿using System;
-using GreetingsCore.Repositories;
+using GreetingsApp.Repositories;
 
-namespace GreetingsCore.Model
+namespace GreetingsApp.Model
 {
     public class Greeting : IEntity
     {

@@ -1,7 +1,7 @@
 ﻿using System;
-using GreetingsCore.Model;
+using GreetingsApp.Model;
 
-namespace GreetingsCore.ViewModels
+namespace GreetingsApp.ViewModels
 {
     public class GreetingsByIdResult
     {

@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace GreetingsCore.Repositories
+namespace GreetingsApp.Repositories
 {
     public interface IRepositoryAsync<T> where T : IEntity
     {

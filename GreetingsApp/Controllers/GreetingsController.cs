@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using GreetingsCore.Db;
-using GreetingsCore.Model;
-using GreetingsCore.Repositories;
-using GreetingsCore.ViewModels;
+using GreetingsApp.Db;
+using GreetingsApp.Model;
+using GreetingsApp.Repositories;
+using GreetingsApp.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace GreetingsApp.Adapters.Controllers
+namespace GreetingsApp.Controllers
 {
     [Route("api/[controller]")]
     public class GreetingsController : Controller
